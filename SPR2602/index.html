@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실적 정보 조회</title>
+    <style>
+        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f8f9fa; font-family: 'Pretendard', sans-serif; }
+        .container { background-color: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 450px; }
+        h2 { text-align: center; margin-bottom: 10px; font-size: 24px; color: #333; }
+        .line { height: 3px; background-color: #1a73e8; margin-bottom: 30px; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #555; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; background-color: #007bff; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        #result { margin-top: 25px; padding: 20px; border-radius: 8px; display: none; background-color: #eef5ff; border: 1px solid #b3d7ff; line-height: 1.8; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>실적 정보 조회</h2>
+    <div class="line"></div>
+    
+    <div class="input-group">
+        <label>성함</label>
+        <input type="text" id="userName" placeholder="이름을 입력하세요">
+    </div>
+    
+    <div class="input-group">
+        <label>생년월일</label>
+        <input type="text" id="userBirth" placeholder="6자리 입력 (예: 820406)">
+    </div>
+    
+    <button type="button" onclick="searchData()">데이터 조회하기</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+    // 2월매출.xlsx 실제 데이터 26명 전원 반영
+    const userData = [
+        {"성함": "김순자", "생년월일": "590703", "매출액": "9,370,000", "타겟": "15,150,000", "진도율": "61.8%"},
+        {"성함": "김은미", "생년월일": "711027", "매출액": "10,236,691", "타겟": "17,850,000", "진도율": "57.3%"},
+        {"성함": "김정희", "생년월일": "670720", "매출액": "7,885,700", "타겟": "16,400,000", "진도율": "48.1%"},
+        {"성함": "김주영", "생년월일": "781208", "매출액": "12,330,000", "타겟": "16,500,000", "진도율": "74.7%"},
+        {"성함": "선순영", "생년월일": "710307", "매출액": "10,580,000", "타겟": "19,200,000", "진도율": "55.1%"},
+        {"성함": "이은심", "생년월일": "811005", "매출액": "10,600,000", "타겟": "24,200,000", "진도율": "43.8%"},
+        {"성함": "이지혜", "생년월일": "860902", "매출액": "15,426,400", "타겟": "17,800,000", "진도율": "86.7%"},
+        {"성함": "정인지", "생년월일": "810506", "매출액": "11,548,600", "타겟": "18,450,000", "진도율": "62.6%"},
+        {"성함": "이혜정", "생년월일": "690115", "매출액": "10,881,400", "타겟": "16,500,000", "진도율": "65.9%"},
+        {"성함": "윤혜림", "생년월일": "950728", "매출액": "8,717,700", "타겟": "16,050,000", "진도율": "54.3%"},
+        {"성함": "최미란", "생년월일": "870823", "매출액": "20,069,500", "타겟": "28,200,000", "진도율": "71.2%"},
+        {"성함": "최민경", "생년월일": "850813", "매출액": "12,805,500", "타겟": "18,600,000", "진도율": "68.8%"},
+        {"성함": "최순정", "생년월일": "680223", "매출액": "12,050,000", "타겟": "17,400,000", "진도율": "69.3%"},
+        {"성함": "황미현", "생년월일": "831221", "매출액": "14,716,200", "타겟": "17,500,000", "진도율": "84.1%"},
+        {"성함": "홍금화", "생년월일": "820406", "매출액": "8,200,000", "타겟": "17,350,000", "진도율": "47.3%"},
+        {"성함": "이예란", "생년월일": "830428", "매출액": "1,906,100", "타겟": "14,200,000", "진도율": "13.4%"},
+        {"성함": "권혜윤", "생년월일": "701011", "매출액": "1,800,000", "타겟": "9,700,000", "진도율": "18.6%"},
+        {"성함": "김민주", "생년월일": "751016", "매출액": "3,800,000", "타겟": "9,300,000", "진도율": "40.9%"},
+        {"성함": "김정민", "생년월일": "650820", "매출액": "1,681,500", "타겟": "5,700,000", "진도율": "29.5%"},
+        {"성함": "박서윤", "생년월일": "991204", "매출액": "3,240,000", "타겟": "7,200,000", "진도율": "45.0%"},
+        {"성함": "이은주", "생년월일": "761230", "매출액": "4,410,000", "타겟": "10,450,000", "진도율": "42.2%"},
+        {"성함": "장은영", "생년월일": "810704", "매출액": "4,865,000", "타겟": "10,750,000", "진도율": "45.3%"},
+        {"성함": "이은비", "생년월일": "890707", "매출액": "19,127,700", "타겟": "11,000,000", "진도율": "173.9%"},
+        {"성함": "최아리아", "생년월일": "800716", "매출액": "3,638,900", "타겟": "10,700,000", "진도율": "34.0%"},
+        {"성함": "이은심", "생년월일": "811005", "매출액": "1,300,000", "타겟": "5,400,000", "진도율": "24.1%"}
+    ];
+
+    function searchData() {
+        const name = document.getElementById('userName').value.trim();
+        const birth = document.getElementById('userBirth').value.trim();
+        const resultDiv = document.getElementById('result');
+
+        if(!name || !birth) {
+            alert("이름과 생년월일을 모두 입력해주세요.");
+            return;
+        }
+
+        const user = userData.find(row => row["성함"] === name && row["생년월일"] === birth);
+
+        if(user) {
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <div style="font-size: 18px; margin-bottom: 10px;"><strong>${user["성함"]}</strong> 님의 조회 결과</div>
+                <hr style="border: 0; border-top: 1px solid #b3d7ff; margin: 10px 0;">
+                <strong>2월 매출액:</strong> ${user["매출액"]}원<br>
+                <strong>목표 타겟:</strong> ${user["타겟"]}원<br>
+                <strong>매출 진도율:</strong> ${user["진도율"]}
+            `;
+        } else {
+            alert("일치하는 정보가 없습니다. 이름과 생년월일을 다시 확인해주세요.");
+            resultDiv.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>
