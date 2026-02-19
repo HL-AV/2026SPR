@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>매출 및 품목 달성률 조회</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .result-box { border: 1px solid #ccc; padding: 15px; margin-top: 15px; border-radius: 5px; max-width: 400px; }
+        .result-item { margin-bottom: 8px; }
+        .label { font-weight: bold; display: inline-block; width: 120px; }
+        hr { border: 0; border-top: 1px dashed #ccc; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <h2>매출 및 품목 달성률 조회</h2>
+    <div>
+        <label>조회 월: 
+            <select id="month">
+                <option value="1">1월</option>
+                <option value="2" selected>2월</option>
+                <option value="3">3월</option>
+                <option value="4">4월</option>
+                <option value="5">5월</option>
+                <option value="6">6월</option>
+                <option value="7">7월</option>
+                <option value="8">8월</option>
+                <option value="9">9월</option>
+                <option value="10">10월</option>
+                <option value="11">11월</option>
+                <option value="12">12월</option>
+            </select>
+        </label><br><br>
+        <label>이름: <input type="text" id="name"></label><br><br>
+        <label>생년월일: <input type="text" id="dob" placeholder="예: 811005"></label><br><br>
+        <button onclick="searchData()">조회</button>
+    </div>
+    <div id="resultContainer"></div>
+
+    <script>
+        async function searchData() {
+            const monthInput = document.getElementById('month').value;
+            const nameInput = document.getElementById('name').value.trim();
+            const dobInput = document.getElementById('dob').value.trim();
+            const resultContainer = document.getElementById('resultContainer');
+            
+            resultContainer.innerHTML = '';
+
+            if (!nameInput || !dobInput) {
+                resultContainer.innerHTML = '<p style="color:red;">이름과 생년월일을 모두 입력해주세요.</p>';
+                return;
+            }
+
+            try {
+                // SPR 폴더 안의 선택한 월 엑셀 파일 불러오기
+                const fileName = `./SPR/${monthInput}월매출.xlsx`;
+                const response = await fetch(fileName);
+                
+                if (!response.ok) {
+                    throw new Error("File not found");
+                }
+                
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, {type: 'array'});
+                
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                const data = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false, defval: "" });
+                
+                const results = data.slice(1).filter(row => {
+                    const rowName = String(row[0] || '').trim();
+                    const rowDob = String(row[1] || '').trim();
+                    return rowName === nameInput && rowDob === dobInput;
+                });
+
+                if (results.length > 0) {
+                    results.forEach((found
