@@ -3,107 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>상세 실적 조회</title>
+    <title>실적 상세 조회</title>
     <style>
-        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f0f2f5; font-family: 'Pretendard', sans-serif; }
-        .container { background-color: #ffffff; padding: 40px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
-        h2 { text-align: center; margin-bottom: 5px; color: #1c1e21; font-size: 26px; }
-        .line { height: 4px; background: linear-gradient(to right, #1a73e8, #4285f4); border-radius: 2px; margin-bottom: 30px; }
-        .input-group { margin-bottom: 18px; }
-        label { display: block; font-weight: 600; margin-bottom: 6px; color: #4b4f56; font-size: 14px; }
-        input { width: 100%; padding: 14px; border: 1px solid #dddfe2; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 16px; background-color: #1a73e8; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f4f7f6; font-family: 'Pretendard', sans-serif; }
+        .container { background-color: #ffffff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 500px; }
+        h2 { text-align: center; margin-bottom: 5px; color: #333; }
+        .line { height: 4px; background-color: #1a73e8; border-radius: 2px; margin-bottom: 30px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; font-size: 14px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; background-color: #007bff; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         #result { margin-top: 25px; display: none; }
-        .result-card { background-color: #f8f9fa; border: 1px solid #e4e6eb; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
-        .section-title { font-weight: bold; font-size: 14px; color: #1a73e8; margin-top: 12px; border-left: 4px solid #1a73e8; padding-left: 8px; margin-bottom: 8px; }
-        .data-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 15px; }
-        .data-label { color: #606770; }
-        .data-value { font-weight: 600; color: #1c1e21; }
-        .highlight { color: #d93025; }
-        .count-info { text-align: center; color: #606770; font-size: 14px; margin-bottom: 10px; }
+        .card { background-color: #f9fbfd; border: 1px solid #e1e8ed; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .section-title { font-weight: bold; font-size: 14px; color: #1a73e8; border-left: 4px solid #1a73e8; padding-left: 8px; margin: 15px 0 8px 0; }
+        .data-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; }
+        .label { color: #666; }
+        .val { font-weight: 600; color: #333; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h2>실적 정보 조회</h2>
+    <h2>실적 정보 상세 조회</h2>
     <div class="line"></div>
     <div class="input-group">
         <label>성함</label>
-        <input type="text" id="userName" placeholder="이름을 입력하세요">
+        <input type="text" id="userName" placeholder="이름 입력">
     </div>
     <div class="input-group">
         <label>생년월일</label>
         <input type="text" id="userBirth" placeholder="6자리 입력 (예: 820406)">
     </div>
-    <button type="button" onclick="searchData()">데이터 조회하기</button>
-    
+    <button onclick="search()">조회하기</button>
     <div id="result"></div>
 </div>
-
 <script>
-    // 엑셀 원본 데이터 26개 전체 (중복 데이터 포함)
-    const userData = [
-        {"n": "김순자", "b": "590703", "m": 9370000, "mt": 15150000, "mp": 61.8, "qc": 15, "qt": 173, "qp": 8.7},
-        {"n": "김은미", "b": "711027", "m": 10236691, "mt": 17850000, "mp": 57.3, "qc": 20, "qt": 205, "qp": 9.8},
-        {"n": "김정희", "b": "670720", "m": 7885700, "mt": 16400000, "mp": 48.1, "qc": 45, "qt": 186, "qp": 24.2},
-        {"n": "김주영", "b": "781208", "m": 12330000, "mt": 16500000, "mp": 74.7, "qc": 24, "qt": 212, "qp": 11.3},
-        {"n": "선순영", "b": "710307", "m": 10580000, "mt": 19200000, "mp": 55.1, "qc": 87, "qt": 242, "qp": 36.0},
-        {"n": "이은심", "b": "811005", "m": 10600000, "mt": 24200000, "mp": 43.8, "qc": 62, "qt": 370, "qp": 16.8},
-        {"n": "이지혜", "b": "860902", "m": 15426400, "mt": 17800000, "mp": 86.7, "qc": 101, "qt": 228, "qp": 44.3},
-        {"n": "정인지", "b": "810506", "m": 11548600, "mt": 18450000, "mp": 62.6, "qc": 54, "qt": 269, "qp": 20.1},
-        {"n": "이혜정", "b": "690115", "m": 10881400, "mt": 16500000, "mp": 65.9, "qc": 29, "qt": 187, "qp": 15.5},
-        {"n": "윤혜림", "b": "950728", "m": 8717700, "mt": 16050000, "mp": 54.3, "qc": 63, "qt": 260, "qp": 24.2},
-        {"n": "최미란", "b": "870823", "m": 20069500, "mt": 28200000, "mp": 71.2, "qc": 106, "qt": 378, "qp": 28.0},
-        {"n": "최민경", "b": "850813", "m": 12805500, "mt": 18600000, "mp": 68.8, "qc": 28, "qt": 221, "qp": 12.7},
-        {"n": "최순정", "b": "680223", "m": 12050000, "mt": 17400000, "mp": 69.3, "qc": 45, "qt": 271, "qp": 16.6},
-        {"n": "황미현", "b": "831221", "m": 14716200, "mt": 17500000, "mp": 84.1, "qc": 28, "qt": 212, "qp": 13.2},
-        {"n": "홍금화", "b": "820406", "m": 8200000, "mt": 17350000, "mp": 47.3, "qc": 59, "qt": 268, "qp": 22.0},
-        {"n": "이예란", "b": "830428", "m": 1906100, "mt": 14200000, "mp": 13.4, "qc": 4, "qt": 164, "qp": 2.4},
-        {"n": "권혜윤", "b": "701011", "m": 1800000, "mt": 9700000, "mp": 18.6, "qc": 6, "qt": 143, "qp": 4.2},
-        {"n": "김민주", "b": "751016", "m": 3800000, "mt": 9300000, "mp": 40.9, "qc": 11, "qt": 106, "qp": 10.4},
-        {"n": "김정민", "b": "650820", "m": 1681500, "mt": 5700000, "mp": 29.5, "qc": 9, "qt": 63, "qp": 14.3},
-        {"n": "박서윤", "b": "991204", "m": 3240000, "mt": 7200000, "mp": 45.0, "qc": 2, "qt": 80, "qp": 2.5},
-        {"n": "이은주", "b": "761230", "m": 4410000, "mt": 10450000, "mp": 42.2, "qc": 32, "qt": 153, "qp": 20.9},
-        {"n": "장은영", "b": "810704", "m": 4865000, "mt": 10750000, "mp": 45.3, "qc": 3, "qt": 120, "qp": 2.5},
-        {"n": "이은비", "b": "890707", "m": 19127700, "mt": 11000000, "mp": 173.9, "qc": 33, "qt": 220, "qp": 15.0},
-        {"n": "최아리아", "b": "800716", "m": 3638900, "mt": 10700000, "mp": 34.0, "qc": 18, "qt": 110, "qp": 16.4},
-        {"n": "이은심", "b": "811005", "m": 1300000, "mt": 5400000, "mp": 24.1, "qc": 6, "qt": 70, "qp": 8.6},
-        {"n": "이예란", "b": "830428", "m": 510000, "mt": 900000, "mp": 56.7, "qc": 0, "qt": 0, "qp": 0.0}
-    ];
-
-    function searchData() {
-        const name = document.getElementById('userName').value.trim();
-        const birth = document.getElementById('userBirth').value.trim();
-        const resContainer = document.getElementById('result');
-
-        if(!name || !birth) { alert("성함과 생년월일을 입력해주세요."); return; }
-
-        // 필터링: 모든 일치 항목 찾기
-        const results = userData.filter(u => u.n === name && String(u.b) === birth);
-
-        if(results.length > 0) {
-            resContainer.style.display = 'block';
-            let html = `<div class="count-info">총 ${results.length}건의 실적이 조회되었습니다.</div>`;
-            
-            results.forEach((user, index) => {
-                html += `
-                <div class="result-card">
-                    <div style="font-weight:bold; text-align:center; margin-bottom:10px; color:#1c1e21;">내역 #${index + 1}</div>
-                    <div class="section-title">📊 매출 정보</div>
-                    <div class="data-row"><span class="data-label">2월 매출</span><span class="data-value">${user.m.toLocaleString()}원</span></div>
-                    <div class="data-row"><span class="data-label">매출 진도율</span><span class="data-value highlight">${user.mp}%</span></div>
-                    
-                    <div class="section-title">📦 품목 정보</div>
-                    <div class="data-row"><span class="data-label">판매 수량</span><span class="data-value">${user.qc}개</span></div>
-                    <div class="data-row"><span class="data-label">품목 진도율</span><span class="data-value highlight">${user.qp}%</span></div>
-                </div>`;
+    // 엑셀 26개 행 데이터 전체 반영 (평균 제외)
+    const d = [{"n":"김순자","b":"590703","m":9370000,"mt":15150000,"mp":"61.8%","qc":15,"qt":173,"qp":"8.7%"},{"n":"김은미","b":"711027","m":10236691,"mt":17850000,"mp":"57.3%","qc":20,"qt":205,"qp":"9.8%"},{"n":"김정희","b":"670720","m":7885700,"mt":16400000,"mp":"48.1%","qc":45,"qt":186,"qp":"24.2%"},{"n":"김주영","b":"781208","m":12330000,"mt":16500000,"mp":"74.7%","qc":24,"qt":212,"qp":"11.3%"},{"n":"선순영","b":"710307","m":10580000,"mt":19200000,"mp":"55.1%","qc":87,"qt":242,"qp":"36.0%"},{"n":"이은심","b":"811005","m":10600000,"mt":24200000,"mp":"43.8%","qc":62,"qt":370,"qp":"16.8%"},{"n":"이지혜","b":"860902","m":15426400,"mt":17800000,"mp":"86.7%","qc":101,"qt":228,"qp":"44.3%"},{"n":"정인지","b":"810506","m":11548600,"mt":18450000,"mp":"62.6%","qc":54,"qt":269,"qp":"20.1%"},{"n":"이혜정","b":"690115","m":10881400,"mt":16500000,"mp":"65.9%","qc":29,"qt":187,"qp":"15.5%"},{"n":"윤혜림","b":"950728","m":8717700,"mt":16050000,"mp":"54.3%","qc":63,"qt":260,"qp":"24.2%"},{"n":"최미란","b":"870823","m":20069500,"mt":28200000,"mp":"71.2%","qc":106,"qt":378,"qp":"28.0%"},{"n":"최민경","b":"850813","m":12805500,"mt":18600000,"mp":"68.8%","qc":28,"qt":221,"qp":"12.7%"},{"n":"최순정","b":"680223","m":12050000,"mt":17400000,"mp":"69.3%","qc":45,"qt":271,"qp":"16.6%"},{"n":"황미현","b":"831221","m":14716200,"mt":17500000,"mp":"84.1%","qc":28,"qt":212,"qp":"13.2%"},{"n":"홍금화","b":"820406","m":8200000,"mt":17350000,"mp":"47.3%","qc":59,"qt":268,"qp":"22.0%"},{"n":"이예란","b":"830428","m":1906100,"mt":14200000,"mp":"13.4%","qc":4,"qt":164,"qp":"2.4%"},{"n":"권혜윤","b":"701011","m":1800000,"mt":9700000,"mp":"18.6%","qc":6,"qt":143,"qp":"4.2%"},{"n":"김민주","b":"751016","m":3800000,"mt":9300000,"mp":"40.9%","qc":11,"qt":106,"qp":"10.4%"},{"n":"김정민","b":"650820","m":1681500,"mt":5700000,"mp":"29.5%","qc":9,"qt":63,"qp":"14.3%"},{"n":"박서윤","b":"991204","m":3240000,"mt":7200000,"mp":"45.0%","qc":2,"qt":80,"qp":"2.5%"},{"n":"이은주","b":"761230","m":4410000,"mt":10450000,"mp":"42.2%","qc":32,"qt":153,"qp":"20.9%"},{"n":"장은영","b":"810704","m":4865000,"mt":10750000,"mp":"45.3%","qc":3,"qt":120,"qp":"2.5%"},{"n":"이은비","b":"890707","m":19127700,"mt":11000000,"mp":"173.9%","qc":33,"qt":220,"qp":"15.0%"},{"n":"최아리아","b":"800716","m":3638900,"mt":10700000,"mp":"34.0%","qc":18,"qt":110,"qp":"16.4%"},{"n":"이은심","b":"811005","m":1300000,"mt":5400000,"mp":"24.1%","qc":6,"qt":70,"qp":"8.6%"},{"n":"이예란","b":"830428","m":510000,"mt":900000,"mp":"56.7%","qc":0,"qt":0,"qp":"0.0%"}];
+    function search() {
+        const n = document.getElementById('userName').value.trim();
+        const b = document.getElementById('userBirth').value.trim();
+        const r = document.getElementById('result');
+        const res = d.filter(u => u.n === n && u.b === b);
+        if(res.length > 0) {
+            r.style.display = 'block';
+            let h = `<p style="text-align:center; font-size:12px; color:#888;">총 ${res.length}건 조회됨</p>`;
+            res.forEach((u, i) => {
+                h += `<div class="card"><div style="font-weight:bold; text-align:center; margin-bottom:10px;">데이터 내역 #${i+1}</div>
+                <div class="section-title">📊 매출 실적</div>
+                <div class="data-row"><span class="label">실적</span><span class="val">${u.m.toLocaleString()}원</span></div>
+                <div class="data-row"><span class="label">타겟</span><span class="val">${u.mt.toLocaleString()}원</span></div>
+                <div class="data-row"><span class="label">진도율</span><span class="val" style="color:#1a73e8">${u.mp}</span></div>
+                <div class="section-title">📦 품목 실적</div>
+                <div class="data-row"><span class="label">수량</span><span class="val">${u.qc}개</span></div>
+                <div class="data-row"><span class="label">타겟</span><span class="val">${u.qt}개</span></div>
+                <div class="data-row"><span class="label">진도율</span><span class="val" style="color:#1a73e8">${u.qp}</span></div></div>`;
             });
-            resContainer.innerHTML = html;
-        } else {
-            alert("일치하는 정보가 없습니다.");
-            resContainer.style.display = 'none';
-        }
+            r.innerHTML = h;
+        } else { alert("일치하는 정보가 없습니다."); r.style.display='none'; }
     }
 </script>
 </body>
